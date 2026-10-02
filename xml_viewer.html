@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML 文件產生器</title>
+</head>
+<body>
+    <h1>XML 文件產生器</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="fileInput">上傳純文字檔案：</label>
+        <input type="file" id="fileInput" accept=".txt" required>
+        <button type="submit">產生 XML</button>
+    </form>
+    <h2>生成的 XML</h2>
+    <textarea id="xmlOutput" rows="20" cols="80" readonly></textarea>
+    <br>
+    <a id="downloadButton" style="display: none;">下載 XML</a>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) return alert('請選擇一個文件！');
+
+            const file = fileInput.files[0];
+            const text = await file.text();
+
+            const lines = text.trim().split('\n');
+            const xmlLines = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "<books>"];
+
+            lines.forEach(line => {
+                const [id, title, category, author, price] = line.split('，');
+                xmlLines.push(
+                    `  <book id=\"${id}\" category=\"${category}\">`,
+                    `    <author>${author}</author>`,
+                    `    <title>${title}</title>`,
+                    `    <price>${price}</price>`,
+                    `  </book>`
+                );
+            });
+
+            xmlLines.push("</books>");
+            const xmlContent = xmlLines.join('\n');
+
+            const xmlOutput = document.getElementById('xmlOutput');
+            xmlOutput.value = xmlContent;
+
+            const downloadButton = document.getElementById('downloadButton');
+            downloadButton.style.display = 'inline';
+
+            const blob = new Blob([xmlContent], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            downloadButton.href = url;
+            downloadButton.download = 'books.xml';
+        });
+    </script>
+</body>
+</html>
